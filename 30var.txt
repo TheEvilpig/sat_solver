@@ -1,7 +1,0 @@
-c Forces UNSAT via a direct contradiction on variable 1.
-c Variables 2-40 are unconstrained padding — they don't appear
-c in any clause, but the solver still iterates over all 2^40
-c assignments regardless, which is what drives the runtime.
-p cnf 40 2
-1 0
--1 0
