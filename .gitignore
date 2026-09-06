@@ -1,0 +1,17 @@
+# compiled binary
+solver
+
+# object files (if you ever switch to separate compilation)
+*.o
+*.out
+
+# editor/IDE cruft
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
+
+# any generated CNF test files you don't want tracked
+*.cnf
