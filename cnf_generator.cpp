@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
 #include <algorithm>
 #include <vector>
 
@@ -242,10 +243,61 @@ void generate_pidgeon_hole(int n, const std::filesystem::path& file_path) {
 }
 
 std::string generate_ground_truth_sat(int v, int c, int k, const std::filesystem::path& file_path){
-    if(v <= 0){std::cerr << "variables must be greater than 0\n"; return"";}
-    if(c <= 0){std::cerr << "clauses must be greater than 0\n"; return"";}
-    if(k <= 0){std::cerr << "clauses cannot be empty\n";return"";}
+    if(v <= 0){std::cerr << "variables must be greater than 0\n"; return "";}
+    if(c <= 0){std::cerr << "clauses must be greater than 0\n"; return "";}
+    if(k <= 0){std::cerr << "clauses cannot be empty\n"; return "";}
+    if(v < k){std::cerr << "need at least k variables to fill a clause\n"; return "";}
 
+    std::ofstream fout = get_outfile(file_path);
 
-    return "";
+    if (!fout.is_open()){
+        std::cerr << "couldnt open \"" << file_path << "\"\n";
+        return "";
+    }
+
+    // pick a random ground truth assignment for all v variables
+    std::vector<bool> assignment(v);
+    for(int i = 0; i < v; i++){
+        assignment[i] = (get_random_1_to_n(2) == 1);
+    }
+
+    fout << "p cnf " << v << " " << c << "\n";
+
+    for(int i = 0; i < c; i++){
+        std::string s;
+
+        std::vector<int> clause_vars = get_random_sample_from_range(1, v, k);
+
+        // pick which position in the clause is the guaranteed-satisfying literal
+        int guaranteed_idx = get_random_1_to_n(k) - 1;
+
+        for(int j = 0; j < k; j++){
+            int var = clause_vars[j];
+
+            if(j == guaranteed_idx){
+                // force this literal to match the ground truth so the clause is satisfied
+                if(!assignment[var - 1])
+                    s += "-";
+            } else {
+                // polarity doesn't matter for satisfiability, randomize it
+                if(get_random_1_to_n(2) == 1)
+                    s += "-";
+            }
+
+            s += std::to_string(var);
+            s += " ";
+        }
+
+        fout << s << "0\n";
+    }
+
+    // build the assignment string, e.g. "T F F T F"
+    std::string assignment_str;
+    for(int i = 0; i < v; i++){
+        assignment_str += (assignment[i] ? "T" : "F");
+        if(i != v - 1)
+            assignment_str += " ";
+    }
+
+    return assignment_str;
 }
